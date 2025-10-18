@@ -22,12 +22,12 @@ export default function PurchaseRecords() {
     const { clearCart } = useCart();
     const location = useLocation();
 
-    useEffect(() => {
+    /*useEffect(() => {
         const params = new URLSearchParams(location.search);
         if (params.get("status") === "approved") {
             clearCart();
         }
-    }, [location, clearCart]);
+    }, [location, clearCart]);*/
 
     useEffect(() => {
         if (!token) return;
@@ -68,16 +68,16 @@ export default function PurchaseRecords() {
         }
     };
 
-    const fetchItems = async (mpPaymentId) => {
+    /*const fetchItems = async (mpPaymentId) => {
         try {
             const response = await API.get(`/api/purchases/${mpPaymentId}/items`);
             setItems((prev) => ({ ...prev, [mpPaymentId]: response.data }));
         } catch (error) {
             console.error("Error cargando items:", error);
         }
-    };
+    };*/
 
-    const toggleExpand = (record) => {
+    /*const toggleExpand = (record) => {
         if (expandedRow === record.id) {
             setExpandedRow(null);
         } else {
@@ -86,9 +86,9 @@ export default function PurchaseRecords() {
                 fetchItems(record.mpPaymentId);
             }
         }
-    };
+    };*/
 
-    const updateShippingStatus = async (id, newStatus) => {
+    /*const updateShippingStatus = async (id, newStatus) => {
         try {
             await API.put(`/api/purchases/${id}/shipping`, newStatus);
             setRecords((prev) =>
@@ -106,10 +106,10 @@ export default function PurchaseRecords() {
         } catch (error) {
             console.error("Error actualizando estado:", error);
         }
-    };
+    };*/
 
     // Filtrado para administrador
-    useEffect(() => {
+    /*useEffect(() => {
         if (userType !== "Administrator") return;
         let filtered = allRecords;
         if (adminFilter === "APPROVED") {
@@ -252,7 +252,7 @@ export default function PurchaseRecords() {
             default:
                 return statusDetail;
         }
-    }
+    }*/
 
     return (
         <div style={{ maxWidth: "1100px", margin: "auto", padding: "20px" }}>

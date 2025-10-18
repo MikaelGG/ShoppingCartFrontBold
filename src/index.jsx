@@ -18,11 +18,9 @@ import { AuthProvider } from './context/AuthContext';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <React.StrictMode>
-    <AuthProvider>
-      <Index />
-    </AuthProvider>
-  </React.StrictMode>
+  <AuthProvider>
+    <Index />
+  </AuthProvider>
 );
 
 export default function Index() {
