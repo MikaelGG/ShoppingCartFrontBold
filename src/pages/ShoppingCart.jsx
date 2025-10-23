@@ -91,7 +91,7 @@ export default function ShoppingCart() {
         buttonDiv.setAttribute("data-currency", "COP");
         buttonDiv.setAttribute("data-amount", dataBold.amount.toString());
         buttonDiv.setAttribute("data-integrity-signature", dataBold.integrityHash);
-        buttonDiv.setAttribute("data-redirection-url", "https://donation-royal-prison-ballet.trycloudflare.com/purchase-records");
+        buttonDiv.setAttribute("data-redirection-url", "https://inherited-blair-pizza-degrees.trycloudflare.com/purchase-records");
 
         container.appendChild(buttonDiv);
 
@@ -124,7 +124,7 @@ export default function ShoppingCart() {
                             currency: "COP",
                             amount: dataBold.amount,
                             integritySignature: dataBold.integrityHash,
-                            redirectionUrl: "https://donation-royal-prison-ballet.trycloudflare.com/purchase-records",
+                            redirectionUrl: "https://inherited-blair-pizza-degrees.trycloudflare.com/purchase-records",
                             containerId: "bold-checkout-button" // Especificar el ID del contenedor
                         };
 
@@ -194,7 +194,14 @@ export default function ShoppingCart() {
                 amount: total,
                 currency: "COP",
                 idClient: userId,
-                idAddress: selectedAddress.id
+                idAddress: selectedAddress.id,
+                products: cart.map(item => ({
+                    code: item.code,
+                    photo: item.photo,
+                    name: item.name,
+                    quantity: item.quantity,
+                    price: item.price
+                }))
             };
 
             console.log("📤 Enviando solicitud:", data);
@@ -213,7 +220,7 @@ export default function ShoppingCart() {
     return (
         <>
             <div className="cart-page">
-                <h1 className="cart-title">Productos en el carrito</h1>
+                <h1 className="cart-title">Carrito de compras</h1>
 
                 <div className="cart-layout">
                     <div className="cart-left">
@@ -311,6 +318,36 @@ export default function ShoppingCart() {
                                         <li>Elige tu método de pago preferido</li>
                                         <li>Confirma tu compra y recibe la confirmación por email</li>
                                     </ol>
+
+                                    <div className="payment-methods">
+                                        <h4>Métodos de pago disponibles:</h4>
+                                        <ul>
+                                            <li>Tarjeta de crédito/débito (Visa, Mastercard, Maestro, American Express, Diners, etc..)</li>
+                                            <li>Efectivo (PSE, Baloto, Efecty)</li>
+                                            <li>Transferencia bancaria</li>
+                                            <li>Billeteras digitales</li>
+                                            <li>Nequi</li>
+                                            <li>Botón Bancolombia</li>
+                                        </ul>
+                                    </div>
+
+                                    <div className="payment-warning">
+                                        <h4>⚠️ Importante:</h4>
+                                        <p>
+                                            Una vez confirmado el pago, recibirás un email con los detalles de tu compra.
+                                            El envío se procesará en un plazo de 1-3 días hábiles.
+                                        </p>
+                                    </div>
+
+                                    <div className="payment-link">
+                                        <a
+                                            href="https://bold.co/cf/legal"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            Ver derechos y seguridad de Bold
+                                        </a>
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -318,8 +355,6 @@ export default function ShoppingCart() {
 
                     <div className="cart-right">
                         <div className="cart-summary">
-                            <h3>Resumen del pedido</h3>
-
                             {cart.length === 0 ? (
                                 <div className="empty-cart">
                                     <p>Tu carrito está vacío</p>

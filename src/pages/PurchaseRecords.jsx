@@ -22,12 +22,12 @@ export default function PurchaseRecords() {
     const { clearCart } = useCart();
     const location = useLocation();
 
-    /*useEffect(() => {
+    useEffect(() => {
         const params = new URLSearchParams(location.search);
-        if (params.get("status") === "approved") {
+        if (params.get("bold-tx-status") === "approved") {
             clearCart();
         }
-    }, [location, clearCart]);*/
+    }, [location, clearCart]);
 
     useEffect(() => {
         if (!token) return;
@@ -45,18 +45,20 @@ export default function PurchaseRecords() {
         try {
             let response;
             if (type === "Administrator") {
-                response = await API.get("/api/purchases");
+                response = await API.get("/api/transactions");
                 setAllRecords(response.data); // Guarda todos los registros
+                console.log(response.data);
                 setRecords(response.data);    // Inicialmente muestra todos
             } else if (type === "Client") {
-                response = await API.get(`/api/purchases/${id}`);
+                response = await API.get(`/api/transactions/${id}`);
+                console.log(response.data);
                 setRecords(response.data);
             }
             // Fetch addresses for each purchase
             const addressPromises = response.data.map(async (purchase) => {
-                if (purchase.addressId) {
-                    const addrRes = await API.get(`/api/shipping-addresses/${purchase.addressId}`);
-                    return { [purchase.addressId]: addrRes.data };
+                if (purchase.idAddress) {
+                    const addrRes = await API.get(`/api/shipping-addresses/${purchase.idAddress}`);
+                    return { [purchase.idAddress]: addrRes.data };
                 }
                 return {};
             });
@@ -68,32 +70,35 @@ export default function PurchaseRecords() {
         }
     };
 
-    /*const fetchItems = async (mpPaymentId) => {
+    const fetchItems = async (idInternal) => {
         try {
-            const response = await API.get(`/api/purchases/${mpPaymentId}/items`);
-            setItems((prev) => ({ ...prev, [mpPaymentId]: response.data }));
+            const response = await API.get(`/api/transactions/products/${idInternal}`);
+            console.log("Response: ", response.data);
+            setItems(prev =>
+                ({ ...prev, [idInternal]: response.data })
+            );
         } catch (error) {
             console.error("Error cargando items:", error);
         }
-    };*/
+    };
 
-    /*const toggleExpand = (record) => {
-        if (expandedRow === record.id) {
+    const toggleExpand = (record) => {
+        if (expandedRow === record.idBoldOrder) {
             setExpandedRow(null);
         } else {
-            setExpandedRow(record.id);
-            if (!items[record.mpPaymentId]) {
-                fetchItems(record.mpPaymentId);
+            setExpandedRow(record.idBoldOrder);
+            if (!items[record.idInternal]) {
+                fetchItems(record.idInternal);
             }
         }
-    };*/
+    };
 
-    /*const updateShippingStatus = async (id, newStatus) => {
+    const updateShippingStatus = async (idInternal, newStatus) => {
         try {
-            await API.put(`/api/purchases/${id}/shipping`, newStatus);
-            setRecords((prev) =>
-                prev.map((r) =>
-                    r.id === id ? { ...r, shippingStatus: newStatus } : r
+            await API.put(`/api/transactions/${idInternal}`, newStatus);
+            setRecords(prev =>
+                prev.map(r =>
+                    r.idInternal === idInternal ? { ...r, shippingStatus: newStatus } : r
                 )
             );
             Swal.fire({
@@ -101,15 +106,14 @@ export default function PurchaseRecords() {
                 icon: "success",
                 title: "Estado de envío actualizado exitosamente",
                 showConfirmButton: false,
-                timer: 2000,
+                timer: 2500,
             });
         } catch (error) {
-            console.error("Error actualizando estado:", error);
+            console.error("Error updating shipping status:", error);
         }
-    };*/
+    };
 
-    // Filtrado para administrador
-    /*useEffect(() => {
+    useEffect(() => {
         if (userType !== "Administrator") return;
         let filtered = allRecords;
         if (adminFilter === "APPROVED") {
@@ -131,10 +135,10 @@ export default function PurchaseRecords() {
         (currentPage - 1) * recordsPerPage,
         currentPage * recordsPerPage
     );
-
     const handlePageChange = (page) => {
         setCurrentPage(page);
     };
+
 
     function getStatusIconAndTooltip(status) {
         switch (status?.toLowerCase()) {
@@ -177,82 +181,14 @@ export default function PurchaseRecords() {
         }
     }
 
-    function getAdminStatusDetailTooltip(status, statusDetail) {
-        if (!statusDetail) return "";
 
-        switch (status?.toLowerCase()) {
-            case "approved":
-                switch (statusDetail) {
-                    case "accredited":
-                        return "Pago acreditado exitosamente";
-                    case "partially_refunded":
-                        return "Pago aprobado con reembolso parcial - Verificar monto";
-                    default:
-                        return "Pago aprobado - Procesar envío";
-                }
-            case "in_process":
-                switch (statusDetail) {
-                    case "pending_contingency":
-                        return "En revisión automática - Esperar hasta 2 días hábiles";
-                    case "pending_review_manual":
-                        return "En revisión MANUAL - Posible fraude, esperar confirmación";
-                    case "offline_process":
-                        return "Procesamiento offline - Verificar en 24-48 horas";
-                    default:
-                        return "Pago en proceso - No enviar hasta confirmación";
-                }
-            case "pending":
-                switch (statusDetail) {
-                    case "pending_waiting_transfer":
-                        return "Esperando transferencia bancaria del cliente";
-                    case "pending_waiting_payment":
-                        return "Esperando pago en efectivo del cliente (ej: Efecty, Baloto)";
-                    case "pending_challenge":
-                        return "Esperando verificación 3DS del cliente";
-                    default:
-                        return "Pago pendiente - Cliente debe completar acción";
-                }
-            case "rejected":
-                switch (statusDetail?.toLowerCase()) {
-                    case "cc_rejected_insufficient_amount":
-                        return "RECHAZADO: Fondos insuficientes en la tarjeta";
-                    case "cc_rejected_bad_filled_card_number":
-                    case "cc_rejected_bad_filled_date":
-                    case "cc_rejected_bad_filled_security_code":
-                    case "cc_rejected_bad_filled_other":
-                        return "RECHAZADO: Datos de tarjeta incorrectos";
-                    case "cc_rejected_call_for_authorize":
-                        return "RECHAZADO: Requiere autorización del banco";
-                    case "cc_rejected_card_disabled":
-                        return "RECHAZADO: Tarjeta deshabilitada";
-                    case "cc_rejected_high_risk":
-                        return "RECHAZADO: Alto riesgo de fraude";
-                    case "cc_rejected_max_attempts":
-                        return "RECHAZADO: Límite de intentos excedido";
-                    case "cc_rejected_duplicated_payment":
-                        return "RECHAZADO: Pago duplicado detectado";
-                    case "rejected_by_bank":
-                        return "RECHAZADO: El banco rechazó la operación";
-                    case "cc_rejected_blacklist":
-                        return "RECHAZADO: Tarjeta en lista negra - POSIBLE FRAUDE";
-                    default:
-                        return "RECHAZADO: " + statusDetail;
-                }
-            case "cancelled":
-                switch (statusDetail) {
-                    case "expired":
-                        return "Cancelado: Expiró después de 30 días pendiente";
-                    case "by_collector":
-                        return "Cancelado por el vendedor";
-                    case "by_payer":
-                        return "Cancelado por el cliente";
-                    default:
-                        return "Pago cancelado";
-                }
-            default:
-                return statusDetail;
-        }
-    }*/
+
+    // Agregar useEffect para monitorear cambios en items
+    useEffect(() => {
+        console.log("Items actualizados:", items);
+    }, [items]);
+
+
 
     return (
         <div style={{ maxWidth: "1100px", margin: "auto", padding: "20px" }}>
@@ -356,17 +292,14 @@ export default function PurchaseRecords() {
                             <th style={th}>Dirección</th>
                             <th style={th}>Acciones</th>
                             <th style={th}>Envío</th>
-                            {userType === "Administrator" && (
-                                <th style={{ ...th, width: "60px" }}></th>
-                            )}
                         </tr>
                     </thead>
                     <tbody>
                         {paginatedRecords.map((record) => {
-                            const address = addresses[record.addressId];
+                            const address = addresses[record.idAddress];
                             const statusInfo = getStatusIconAndTooltip(record.status);
                             return (
-                                <React.Fragment key={record.id}>
+                                <React.Fragment key={record.idInternal}>
                                     <tr style={{ borderBottom: "1px solid #ddd" }}>
                                         {/* Estado de compra con icono y tooltip */}
                                         <td style={td}>
@@ -411,8 +344,8 @@ export default function PurchaseRecords() {
                                             </div>
                                         </td>
                                         <td style={td}>
-                                            {record.createdAt
-                                                ? new Date(record.createdAt).toLocaleString()
+                                            {record.createAt
+                                                ? new Date(record.createAt).toLocaleString()
                                                 : "N/A"}
                                         </td>
                                         <td style={td}>${record.amount}</td>
@@ -441,14 +374,14 @@ export default function PurchaseRecords() {
                                                     cursor: "pointer"
                                                 }}
                                             >
-                                                {expandedRow === record.id ? "Ocultar compra" : "Ver compra"}
+                                                {expandedRow === record.idBoldOrder ? "Ocultar compra" : "Ver compra"}
                                             </button>
                                         </td>
                                         <td style={td}>
                                             {userType === "Administrator" ? (
                                                 <select
                                                     value={record.shippingStatus}
-                                                    onChange={(e) => updateShippingStatus(record.id, e.target.value)}
+                                                    onChange={(e) => updateShippingStatus(record.idInternal, e.target.value)}
                                                     style={{
                                                         padding: "5px 8px",
                                                         borderRadius: "4px",
@@ -490,55 +423,9 @@ export default function PurchaseRecords() {
                                                 </>
                                             )}
                                         </td>
-                                        {/* Info icon para admin */}
-                                        {userType === "Administrator" && (
-                                            <td style={td}>
-                                                <div style={{ position: "relative", display: "inline-block" }}>
-                                                    <span
-                                                        style={{ cursor: "pointer" }}
-                                                        onMouseEnter={e => {
-                                                            const tooltip = e.currentTarget.nextSibling;
-                                                            tooltip.style.display = "block";
-                                                        }}
-                                                        onMouseLeave={e => {
-                                                            const tooltip = e.currentTarget.nextSibling;
-                                                            tooltip.style.display = "none";
-                                                        }}
-                                                    >
-                                                        <FaInfoCircle style={{ color: "#007bff", fontSize: "22px" }} />
-                                                    </span>
-                                                    <div
-                                                        style={{
-                                                            display: "none",
-                                                            position: "absolute",
-                                                            left: "50%",
-                                                            top: "-100px", // Ajusta según el alto del tooltip
-                                                            transform: "translateX(-50%)",
-                                                            background: "#fff",
-                                                            border: "1px solid #ccc",
-                                                            borderRadius: "8px",
-                                                            boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
-                                                            padding: "10px 16px",
-                                                            maxWidth: "260px",
-                                                            minWidth: "180px",
-                                                            zIndex: 9999,
-                                                            textAlign: "left",
-                                                            fontSize: "13px",
-                                                            wordBreak: "break-word"
-                                                        }}
-                                                    >
-                                                        <strong>Status detail:</strong> {record.statusDetail || "N/A"}
-                                                        <br />
-                                                        <span style={{ color: "#666" }}>
-                                                            {getAdminStatusDetailTooltip(record.status, record.statusDetail)}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        )}
                                     </tr>
 
-                                    {expandedRow === record.id && items[record.mpPaymentId] && (
+                                    {expandedRow === record.idBoldOrder && items[record.idInternal] && (
                                         <tr>
                                             <td colSpan="5">
                                                 <div style={{
@@ -568,12 +455,12 @@ export default function PurchaseRecords() {
                                                             </tr>
                                                         </thead>
                                                         <tbody>
-                                                            {items[record.mpPaymentId].map((p, i) => (
+                                                            {items[record.idInternal].map((p, i) => (
                                                                 <tr key={i}>
                                                                     <td>
                                                                         <img
-                                                                            src={p.pictureUrl}
-                                                                            alt={p.title}
+                                                                            src={p.photo}
+                                                                            alt={p.name}
                                                                             style={{
                                                                                 width: "60px",
                                                                                 height: "60px",
@@ -582,9 +469,9 @@ export default function PurchaseRecords() {
                                                                             }}
                                                                         />
                                                                     </td>
-                                                                    <td>{p.title}</td>
+                                                                    <td>{p.name}</td>
                                                                     <td>{p.quantity}</td>
-                                                                    <td>${p.unitPrice}</td>
+                                                                    <td>${p.price}</td>
                                                                 </tr>
                                                             ))}
                                                         </tbody>
@@ -621,7 +508,7 @@ export default function PurchaseRecords() {
                     </tbody>
                 </table>
             )}
-            {totalPages > 1 && (
+            {totalPages > 1 ? (
                 <div style={{ marginTop: "20px", textAlign: "left" }}>
                     {Array.from({ length: totalPages }, (_, i) => (
                         <button
@@ -642,7 +529,7 @@ export default function PurchaseRecords() {
                         </button>
                     ))}
                 </div>
-            )}
+            ) : null}
         </div>
     );
 }
