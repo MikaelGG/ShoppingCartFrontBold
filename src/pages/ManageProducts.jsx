@@ -21,14 +21,26 @@ export default function ManageProducts() {
   }, []);
 
   const fetchProducts = async () => {
-    const { data } = await API.get('/api/products');
-    console.log(data);
-    setProducts(data);
+    try {
+      const { data } = await API.get('/api/products');
+      console.log(data);
+      setProducts(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Error al cargar productos:', error);
+      setProducts([]);
+    }
   };
+  
   const fetchTypes = async () => {
-    const { data } = await API.get('/api/product-types');
-    console.log(data);
-    setTypes(Array.isArray(data) ? data : []);
+    try {
+      const { data } = await API.get('/api/product-types');
+      console.log(data);
+      // Asegurar que types sea siempre un array
+      setTypes(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Error al cargar tipos de productos:', error);
+      setTypes([]);
+    }
   };
 
   const handleProductSubmit = async e => {
@@ -42,7 +54,7 @@ export default function ManageProducts() {
         Swal.fire({
           position: "center",
           icon: "success",
-          title: "Product updated successfully",
+          title: "Producto actualizado correctamente",
           showConfirmButton: false,
           timer: 3000,
         });
@@ -51,7 +63,7 @@ export default function ManageProducts() {
         Swal.fire({
           position: "center",
           icon: "success",
-          title: "Product saved successfully",
+          title: "Producto guardado correctamente",
           showConfirmButton: false,
           timer: 3000,
         });
@@ -60,10 +72,16 @@ export default function ManageProducts() {
       setModalProduct(false);
       fetchProducts();
     } catch (error) {
-      Swal.fire('Error', 'No se pudo agregar', 'error');
-      console.log(error)
+      console.error('Error al guardar producto:', error);
+      const errorMessage = error.response?.data?.message || 'No se pudo guardar el producto. Verifica los datos e intenta de nuevo.';
+      Swal.fire({
+        title: "Error",
+        text: errorMessage,
+        icon: "error"
+      });
     }
   };
+  
   const handleProductDelete = code => {
     Swal.fire({
       title: '¿Eliminar producto?',
@@ -72,8 +90,24 @@ export default function ManageProducts() {
       confirmButtonText: 'Sí, eliminar'
     }).then(async result => {
       if (result.isConfirmed) {
-        await API.delete(`/api/products/${code}`);
-        fetchProducts();
+        try {
+          await API.delete(`/api/products/${code}`);
+          Swal.fire({
+            title: "Producto eliminado",
+            icon: "success",
+            showConfirmButton: false,
+            timer: 2000
+          });
+          fetchProducts();
+        } catch (error) {
+          console.error('Error al eliminar producto:', error);
+          const errorMessage = error.response?.data?.message || 'No se pudo eliminar el producto. Intenta de nuevo.';
+          Swal.fire({
+            title: "Error",
+            text: errorMessage,
+            icon: "error"
+          });
+        }
       }
     });
   };
@@ -87,7 +121,7 @@ export default function ManageProducts() {
         Swal.fire({
           position: "center",
           icon: "success",
-          title: "Product type updated successfully",
+          title: "Tipo de producto actualizado correctamente",
           showConfirmButton: false,
           timer: 3000,
         });
@@ -96,7 +130,7 @@ export default function ManageProducts() {
         Swal.fire({
           position: "center",
           icon: "success",
-          title: "Product type saved successfully",
+          title: "Tipo de producto guardado correctamente",
           showConfirmButton: false,
           timer: 3000,
         });
@@ -104,7 +138,13 @@ export default function ManageProducts() {
       setFormType({ id: '', nameType: '' });
       fetchTypes();
     } catch (error) {
-      console.log(error);
+      console.error('Error al guardar tipo de producto:', error);
+      const errorMessage = error.response?.data?.message || 'No se pudo guardar el tipo de producto. Intenta de nuevo.';
+      Swal.fire({
+        title: "Error",
+        text: errorMessage,
+        icon: "error"
+      });
     }
   };
 
@@ -116,8 +156,24 @@ export default function ManageProducts() {
       confirmButtonText: 'Sí, eliminar'
     }).then(async result => {
       if (result.isConfirmed) {
-        await API.delete(`/api/product-types/${id}`);
-        fetchTypes();
+        try {
+          await API.delete(`/api/product-types/${id}`);
+          Swal.fire({
+            title: "Tipo de producto eliminado",
+            icon: "success",
+            showConfirmButton: false,
+            timer: 2000
+          });
+          fetchTypes();
+        } catch (error) {
+          console.error(error);
+          const errorMessage = error.response?.data?.message || 'No se pudo eliminar el tipo de producto. Verifica si hay productos asociados.';
+          Swal.fire({
+            title: "Error",
+            text: errorMessage,
+            icon: "error"
+          });
+        }
       }
     });
   };
