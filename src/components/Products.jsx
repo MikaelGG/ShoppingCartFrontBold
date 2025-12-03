@@ -1,5 +1,6 @@
 import axios from 'axios';
 import './css/Products.css'
+import API from '../config/AxiosConfig.jsx'
 import { useEffect, useState } from 'react';
 import { useCart } from '../context/CartContext';
 
@@ -59,13 +60,13 @@ export function Products({ selectedType, searchQuery }) {
         setLoading(true);
         let url = '';
         if (searchQuery && searchQuery.trim() !== "") {
-            url = `http://localhost:8080/api/products/searcher?name=${encodeURIComponent(searchQuery)}`;
+            url = `/api/products/searcher?name=${encodeURIComponent(searchQuery)}`;
         } else if (selectedType) {
-            url = `http://localhost:8080/api/products/product/${selectedType}`;
+            url = `/api/products/product/${selectedType}`;
         } else {
-            url = 'http://localhost:8080/api/products';
+            url = '/api/products';
         }
-        axios.get(url).then(res => setProducts(res.data))
+        API.get(url).then(res => setProducts(res.data))
             .catch(() => setProducts([]))
             .finally(() => setLoading(false));
     }, [selectedType, searchQuery]);
