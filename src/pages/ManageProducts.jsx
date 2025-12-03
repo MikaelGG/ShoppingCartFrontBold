@@ -250,6 +250,7 @@ export default function ManageProducts() {
               </div>
             </div>
           ))}
+          {types.length === 0 ? <h4>No hay tipos de productos</h4> : null}
         </div>
       </GlobalModal>
     </div >
