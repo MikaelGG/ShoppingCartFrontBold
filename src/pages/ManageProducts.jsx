@@ -28,7 +28,7 @@ export default function ManageProducts() {
   const fetchTypes = async () => {
     const { data } = await API.get('/api/product-types');
     console.log(data);
-    setTypes(data);
+    setTypes(Array.isArray(data) ? data : []);
   };
 
   const handleProductSubmit = async e => {
