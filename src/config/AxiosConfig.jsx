@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-    baseURL: 'http://54.94.49.112:8080',
+    baseURL: 'https://shoppingcartb.duckdns.org',
     headers: {
         'Content-Type': 'application/json'
     }
