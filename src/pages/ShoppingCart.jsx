@@ -91,7 +91,7 @@ export default function ShoppingCart() {
         buttonDiv.setAttribute("data-currency", "COP");
         buttonDiv.setAttribute("data-amount", dataBold.amount.toString());
         buttonDiv.setAttribute("data-integrity-signature", dataBold.integrityHash);
-        buttonDiv.setAttribute("data-redirection-url", "https://inherited-blair-pizza-degrees.trycloudflare.com/purchase-records");
+        buttonDiv.setAttribute("data-redirection-url", "https://main.dtwgf63ykehy5.amplifyapp.com/purchase-records");
 
         container.appendChild(buttonDiv);
 
@@ -124,7 +124,7 @@ export default function ShoppingCart() {
                             currency: "COP",
                             amount: dataBold.amount,
                             integritySignature: dataBold.integrityHash,
-                            redirectionUrl: "https://inherited-blair-pizza-degrees.trycloudflare.com/purchase-records",
+                            redirectionUrl: "https://main.dtwgf63ykehy5.amplifyapp.com/purchase-records",
                             containerId: "bold-checkout-button" // Especificar el ID del contenedor
                         };
 
